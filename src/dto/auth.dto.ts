@@ -31,10 +31,6 @@ export class RegisterAccountDTO {
   @IsNotEmpty()
   @IsString()
   lastName: string;
-
-  @IsNotEmpty()
-  @IsString()
-  inventoryName: string;
 }
 
 export class BaseAuthLoginDTO {
