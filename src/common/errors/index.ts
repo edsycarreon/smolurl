@@ -1,7 +1,7 @@
 import { HttpStatus, UnauthorizedException } from '@nestjs/common';
 
-import { ErrorCode } from '../constants';
 import { CustomErrorInterface } from './custom-error.type';
+import { ErrorCode } from '../constants';
 
 export const INVALID_JWT_TOKEN: CustomErrorInterface = {
   status: HttpStatus.UNAUTHORIZED,
