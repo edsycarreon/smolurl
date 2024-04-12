@@ -9,9 +9,8 @@ SET search_path TO smolapp;
 
 -- Main tables
 -- Drop the table if it exists
-DROP TABLE IF EXISTS person;
 DROP TABLE IF EXISTS link;
-DROP TABLE IF EXISTS link_config;
+DROP TABLE IF EXISTS person;
 
 -- Create tables
 
@@ -30,22 +29,13 @@ CREATE TABLE person (
 CREATE TABLE link (
   link_id SERIAL PRIMARY KEY,
   person_id INT NOT NULL,
-  short_url VARCHAR(7) UNIQUE NOT NULL,
+  short_url VARCHAR(30) UNIQUE NOT NULL,
   original_url TEXT NOT NULL,
-  added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT NULL,
-  FOREIGN KEY (person_id) REFERENCES person(person_id)
-);
-
--- Link Configs
-CREATE TABLE link_config (
-  link_config_id SERIAL PRIMARY KEY,
-  link_id INT NOT NULL,
   visit_count INT NOT NULL DEFAULT 0,
   expires_in TIMESTAMP DEFAULT NULL,
   last_redirect TIMESTAMP DEFAULT NULL,
   password VARCHAR(255) DEFAULT NULL,
   added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT NULL,
-  FOREIGN KEY (link_id) REFERENCES link(link_id)
+  FOREIGN KEY (person_id) REFERENCES person(person_id)
 );
