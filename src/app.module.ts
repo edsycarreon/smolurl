@@ -5,7 +5,8 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { JwtModule } from './jwt/jwt.module';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './apps/auth/auth.module';
+import { LinksModule } from './apps/links/links.module';
 import databaseConfig from './config/database.config';
 
 @Module({
@@ -16,6 +17,7 @@ import databaseConfig from './config/database.config';
     DatabaseModule,
     JwtModule,
     AuthModule,
+    LinksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
