@@ -1,11 +1,16 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import {
+  createParamDecorator,
+  ExecutionContext,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CustomerDTO } from 'src/dto/customer.dto';
 
 export const CurrentUser = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization?.split(' ')[1]; // Assuming the token is sent in the Authorization header as "Bearer token"
+    const token = request.headers.authorization?.split(' ')[1];
 
     if (!token) {
       return null;
@@ -16,8 +21,12 @@ export const CurrentUser = createParamDecorator(
       const decodedToken = jwtService.decode(token) as { user: CustomerDTO };
       return decodedToken.user;
     } catch (error) {
-      // Handle the case when the token is invalid or expired
-      return null;
+      Logger.error(
+        `Token validation error: ${error.message}`,
+        error.stack,
+        'CurrentUserDecorator',
+      );
+      throw new UnauthorizedException('Failed to authenticate token.');
     }
   },
 );
