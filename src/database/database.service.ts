@@ -17,6 +17,7 @@ export class DatabaseService {
       user: this.config.user,
       password: this.config.password,
       database: this.config.name,
+      options: `-c search_path=${this.config.schema}`,
     });
   }
 

@@ -9,7 +9,7 @@ import { JwtStrategy } from '../common/auth/strategies/jwt.strategy';
     NestJwtModule.register({
       global: true,
       secret: 'secret',
-      signOptions: { expiresIn: '1h' }, // Set your desired token expiration time
+      signOptions: { expiresIn: '1h' },
     }),
   ],
   providers: [JwtStrategy],
