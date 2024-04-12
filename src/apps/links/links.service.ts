@@ -1,6 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { ApiResponse } from 'src/common/api-response';
+import commonConfig from 'src/config/common.config';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateLinkDTO } from 'src/dto';
 import { hashPassword } from 'src/utils';
@@ -8,6 +10,8 @@ import { hashPassword } from 'src/utils';
 @Injectable()
 export class LinksService {
   constructor(
+    @Inject(commonConfig.KEY)
+    private readonly config: ConfigType<typeof commonConfig>,
     private readonly databaseService: DatabaseService,
     private readonly jwtService: JwtService,
   ) {}
@@ -23,7 +27,7 @@ export class LinksService {
 
     if (customUrl) {
       const randomSeed = this.generateRandomUrlSeed();
-      const domain = 'smolapp.edsybitsy.com';
+      const domain = this.config.baseUrl;
       shortUrl = `${domain}/${randomSeed}`;
       console.log('shortUrl', shortUrl);
     }
@@ -33,13 +37,27 @@ export class LinksService {
       VALUES ($1, $2, $3, NOW() + $4::interval, $5)`;
 
     const values = [id, longUrl, shortUrl, expiresIn, hashedPassword];
-    const response = await this.databaseService.query(query, values);
 
-    if (response) {
-      console.log('response');
+    try {
+      const response = await this.databaseService.query(query, values);
+      if (response) {
+        return new ApiResponse<any>(
+          HttpStatus.FOUND,
+          'Link created successfully',
+          null,
+          { shortUrl },
+        );
+      }
+    } catch (e) {
+      throw new HttpException(
+        new ApiResponse<any>(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Error creating account',
+          e,
+        ),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    return 'Create link';
   }
 
   async checkIfCustomUrlExists(customUrl: string) {
