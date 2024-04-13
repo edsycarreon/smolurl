@@ -1,11 +1,10 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { ApiResponse } from 'src/common/api-response';
 import commonConfig from 'src/config/common.config';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateLinkDTO } from 'src/dto';
-import { hashPassword } from 'src/utils';
+import { generateRandomCharacters, hashPassword } from 'src/utils';
 
 @Injectable()
 export class LinksService {
@@ -13,7 +12,6 @@ export class LinksService {
     @Inject(commonConfig.KEY)
     private readonly config: ConfigType<typeof commonConfig>,
     private readonly databaseService: DatabaseService,
-    private readonly jwtService: JwtService,
   ) {}
 
   async createLink(id: number, body: CreateLinkDTO) {
@@ -26,10 +24,19 @@ export class LinksService {
     }
 
     if (customUrl) {
-      const randomSeed = this.generateRandomUrlSeed();
+      let uniqueUrlFound = false;
       const domain = this.config.baseUrl;
-      shortUrl = `${domain}/${randomSeed}`;
-      console.log('shortUrl', shortUrl);
+      while (!uniqueUrlFound) {
+        const randomSeed = generateRandomCharacters(7);
+        const potentialShortUrl = `${domain}/${randomSeed}`;
+        const existingUrl = await this.checkIfCustomUrlExists(
+          potentialShortUrl,
+        );
+        if (!existingUrl) {
+          shortUrl = potentialShortUrl;
+          uniqueUrlFound = true;
+        }
+      }
     }
 
     const query = `
@@ -61,21 +68,10 @@ export class LinksService {
   }
 
   async checkIfCustomUrlExists(customUrl: string) {
-    const query = `SELECT * FROM link WHERE custom_url = $1`;
+    const query = `SELECT * FROM link WHERE short_url = $1`;
     const values = [customUrl];
     const response = await this.databaseService.query(query, values);
 
     return response.rows.length > 0;
-  }
-
-  generateRandomUrlSeed() {
-    const characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let result = '';
-    for (let i = 0; i < 7; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
   }
 }
