@@ -13,8 +13,8 @@ import { CreateLinkDTO, CustomerDTO } from 'src/dto';
 import { CurrentUser } from 'src/common/decorators';
 import { Response } from 'express';
 
-@ApiTags('links')
-@Controller('links')
+@ApiTags('/')
+@Controller('/')
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 

@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { ApiResponse } from 'src/common/api-response';
 import commonConfig from 'src/config/common.config';
@@ -24,43 +18,42 @@ export class LinksService {
     Logger.log('Creating link');
     const { longUrl, customUrl, expiresIn, password } = body;
 
-    let hashedPassword = '';
-    let shortUrl = '';
+    let hashedPassword = null;
     if (password) {
       hashedPassword = await hashPassword(password);
     }
 
-    if (customUrl) {
-      let uniqueUrlFound = false;
-      while (!uniqueUrlFound) {
-        const randomSeed = generateRandomCharacters(7);
-        const existingUrl = await this.checkIfCustomUrlExists(randomSeed);
-        if (!existingUrl) {
-          shortUrl = randomSeed;
-          uniqueUrlFound = true;
-        }
+    let shortUrl = null;
+    shortUrl = customUrl;
+    if (!customUrl) {
+      shortUrl = await this.generateUniqueShortUrl(7);
+    } else {
+      const existingUrl = await this.checkIfCustomUrlExists(shortUrl);
+      if (existingUrl) {
+        return new ApiResponse<any>(
+          HttpStatus.BAD_REQUEST,
+          'Custom URL already exists',
+        );
       }
     }
 
     const query = `
       INSERT INTO link (person_id, original_url, short_url, expires_in, password) 
       VALUES ($1, $2, $3, NOW() + $4::interval, $5)`;
-
     const values = [id, longUrl, shortUrl, expiresIn, hashedPassword];
 
     const response = await this.databaseService.query(query, values);
+
     if (!response) {
       new ApiResponse<any>(
         HttpStatus.INTERNAL_SERVER_ERROR,
-        'Error creating account',
-        null,
+        'Something went wrong creating link',
       );
     }
 
     return new ApiResponse<any>(
       HttpStatus.CREATED,
       'Link created successfully',
-      null,
       { shortUrl: this.config.baseUrl + '/' + shortUrl },
     );
   }
@@ -87,7 +80,17 @@ export class LinksService {
     return { status: HttpStatus.OK, url: link.rows[0].original_url };
   }
 
-  async checkIfCustomUrlExists(customUrl: string) {
+  private async generateUniqueShortUrl(maxLength: number): Promise<string> {
+    let uniqueUrlFound = false;
+    let shortUrl = '';
+    while (!uniqueUrlFound) {
+      shortUrl = generateRandomCharacters(maxLength);
+      uniqueUrlFound = !(await this.checkIfCustomUrlExists(shortUrl));
+    }
+    return shortUrl;
+  }
+
+  private async checkIfCustomUrlExists(customUrl: string) {
     const query = `SELECT * FROM link WHERE short_url = $1`;
     const values = [customUrl];
     const response = await this.databaseService.query(query, values);
@@ -95,7 +98,7 @@ export class LinksService {
     return response.rows.length > 0;
   }
 
-  async getUrl(customUrl: string) {
+  private async getUrl(customUrl: string) {
     const query = `SELECT * FROM link WHERE short_url = $1`;
     const values = [customUrl];
     const response = await this.databaseService.query(query, values);

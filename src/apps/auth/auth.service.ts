@@ -29,14 +29,12 @@ export class AuthService {
       return new ApiResponse<any>(
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Error creating account',
-        null,
       );
     }
 
     return new ApiResponse<any>(
       HttpStatus.CREATED,
       'Account created successfully',
-      null,
     );
   }
 
@@ -55,7 +53,6 @@ export class AuthService {
       return new ApiResponse<any>(
         HttpStatus.INTERNAL_SERVER_ERROR,
         'Error logging in',
-        null,
       );
     }
 
