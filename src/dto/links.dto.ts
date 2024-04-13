@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 import { BaseDTO } from './base.dto';
 
 export class CreateLinkDTO extends BaseDTO {
@@ -6,6 +6,7 @@ export class CreateLinkDTO extends BaseDTO {
   longUrl: string;
 
   @IsOptional()
+  @MaxLength(7)
   customUrl?: string;
 
   @IsOptional()
