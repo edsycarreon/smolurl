@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { ApiResponse } from 'src/common/api-response';
 import commonConfig from 'src/config/common.config';
@@ -14,7 +20,8 @@ export class LinksService {
     private readonly databaseService: DatabaseService,
   ) {}
 
-  async createLink(id: number, body: CreateLinkDTO) {
+  public async createLink(id: number, body: CreateLinkDTO) {
+    Logger.log('Creating link');
     const { longUrl, customUrl, expiresIn, password } = body;
 
     let hashedPassword = '';
@@ -25,15 +32,11 @@ export class LinksService {
 
     if (customUrl) {
       let uniqueUrlFound = false;
-      const domain = this.config.baseUrl;
       while (!uniqueUrlFound) {
         const randomSeed = generateRandomCharacters(7);
-        const potentialShortUrl = `${domain}/${randomSeed}`;
-        const existingUrl = await this.checkIfCustomUrlExists(
-          potentialShortUrl,
-        );
+        const existingUrl = await this.checkIfCustomUrlExists(randomSeed);
         if (!existingUrl) {
-          shortUrl = potentialShortUrl;
+          shortUrl = randomSeed;
           uniqueUrlFound = true;
         }
       }
@@ -45,26 +48,43 @@ export class LinksService {
 
     const values = [id, longUrl, shortUrl, expiresIn, hashedPassword];
 
-    try {
-      const response = await this.databaseService.query(query, values);
-      if (response) {
-        return new ApiResponse<any>(
-          HttpStatus.FOUND,
-          'Link created successfully',
-          null,
-          { shortUrl },
-        );
-      }
-    } catch (e) {
-      throw new HttpException(
-        new ApiResponse<any>(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          'Error creating account',
-          e,
-        ),
+    const response = await this.databaseService.query(query, values);
+    if (!response) {
+      new ApiResponse<any>(
         HttpStatus.INTERNAL_SERVER_ERROR,
+        'Error creating account',
+        null,
       );
     }
+
+    return new ApiResponse<any>(
+      HttpStatus.CREATED,
+      'Link created successfully',
+      null,
+      { shortUrl: this.config.baseUrl + '/' + shortUrl },
+    );
+  }
+
+  public async getLongUrl(shortUrl: string) {
+    Logger.log('Getting long URL for: ' + shortUrl);
+    const link = await this.getUrl(shortUrl);
+
+    if (link.rows.length === 0) {
+      return { status: HttpStatus.NOT_FOUND, message: 'Link not found' };
+    }
+
+    if (link.rows[0].expires_in < new Date()) {
+      return { status: HttpStatus.GONE, message: 'Link has expired' };
+    }
+
+    if (link.rows[0].password != null) {
+      return {
+        status: HttpStatus.UNAUTHORIZED,
+        message: 'Link is password protected',
+      };
+    }
+
+    return { status: HttpStatus.OK, url: link.rows[0].original_url };
   }
 
   async checkIfCustomUrlExists(customUrl: string) {
@@ -73,5 +93,13 @@ export class LinksService {
     const response = await this.databaseService.query(query, values);
 
     return response.rows.length > 0;
+  }
+
+  async getUrl(customUrl: string) {
+    const query = `SELECT * FROM link WHERE short_url = $1`;
+    const values = [customUrl];
+    const response = await this.databaseService.query(query, values);
+
+    return response;
   }
 }
