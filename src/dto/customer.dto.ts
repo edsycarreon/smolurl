@@ -1,35 +1,35 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseDTO } from './base.dto';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CustomerDTO extends BaseDTO {
   @IsOptional()
   @IsNumber()
-  @ApiPropertyOptional()
+  @ApiProperty()
   id?: number;
 
   @IsOptional()
   @IsString()
-  @ApiPropertyOptional()
+  @ApiProperty()
   firstName?: string;
 
   @IsOptional()
   @IsString()
-  @ApiPropertyOptional()
+  @ApiProperty()
   lastName?: string;
 
   @IsOptional()
   @IsString()
-  @ApiPropertyOptional()
+  @ApiProperty()
   email?: string;
 
   @IsOptional()
   @IsString()
-  @ApiPropertyOptional()
+  @ApiProperty()
   addedAt?: string;
 
   @IsOptional()
   @IsString()
-  @ApiPropertyOptional()
+  @ApiProperty()
   updatedAt?: string;
 }
