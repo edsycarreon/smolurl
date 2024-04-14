@@ -9,3 +9,7 @@ export enum ErrorMessage {
   INCORRECT_PASSWORD = 'The password provided is incorrect',
   COULD_NOT_CREATE_ACCOUNT = 'Failed to create account',
 }
+
+export const jwtConstants = {
+  secret: 'iuAIHDFWBiwyb1124AFN11r4jk',
+};
