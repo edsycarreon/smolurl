@@ -4,7 +4,11 @@ import { ApiResponse } from 'src/common/api-response';
 import commonConfig from 'src/config/common.config';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateLinkDTO } from 'src/dto';
-import { generateRandomCharacters, hashPassword } from 'src/utils';
+import {
+  comparePasswords,
+  generateRandomCharacters,
+  hashPassword,
+} from 'src/utils';
 
 @Injectable()
 export class AppService {
@@ -74,6 +78,30 @@ export class AppService {
       return {
         status: HttpStatus.UNAUTHORIZED,
         message: 'Link is password protected',
+      };
+    }
+
+    return { status: HttpStatus.OK, url: link.rows[0].original_url };
+  }
+
+  public async getProtectedUrl(shortUrl: string, password: string) {
+    Logger.log('Getting protected URL for: ' + shortUrl);
+    const link = await this.getUrl(shortUrl);
+
+    if (link.rows.length === 0) {
+      return { status: HttpStatus.NOT_FOUND, message: 'Link not found' };
+    }
+
+    if (link.rows[0].expires_in < new Date()) {
+      return { status: HttpStatus.GONE, message: 'Link has expired' };
+    }
+
+    const hashedPassword = link.rows[0].password;
+    const isPasswordMatched = await comparePasswords(password, hashedPassword);
+    if (!isPasswordMatched) {
+      return {
+        status: HttpStatus.UNAUTHORIZED,
+        message: 'Incorrect password',
       };
     }
 

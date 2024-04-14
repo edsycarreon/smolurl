@@ -34,15 +34,39 @@ export class AppController {
       case HttpStatus.OK:
         return res.redirect(result.url);
       case HttpStatus.NOT_FOUND:
-        return res
-          .status(HttpStatus.NOT_FOUND)
-          .send('404 Not Found screen or URL');
+        return res.status(HttpStatus.NOT_FOUND).send('URL not found');
       case HttpStatus.GONE:
-        return res.status(HttpStatus.GONE).send('Link expired');
+        return res.status(HttpStatus.GONE).send('URL has expired');
       case HttpStatus.UNAUTHORIZED:
         return res
           .status(HttpStatus.UNAUTHORIZED)
           .send('Password protected link message or URL');
+      default:
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .send('An unexpected error occurred');
+    }
+  }
+
+  @Post('/protected')
+  async getProtectedUrl(
+    @Body() body: { shortUrl: string; password: string },
+    @Res() res: Response,
+  ) {
+    const result = await this.appService.getProtectedUrl(
+      body.shortUrl,
+      body.password,
+    );
+
+    switch (result.status) {
+      case HttpStatus.OK:
+        return res.redirect(result.url);
+      case HttpStatus.NOT_FOUND:
+        return res.status(HttpStatus.NOT_FOUND).send('URL not found');
+      case HttpStatus.GONE:
+        return res.status(HttpStatus.GONE).send('URL has expired');
+      case HttpStatus.UNAUTHORIZED:
+        return res.status(HttpStatus.UNAUTHORIZED).send('Incorrect password.');
       default:
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
