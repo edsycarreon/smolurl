@@ -41,17 +41,26 @@ export class AppService {
       }
     }
 
-    const query = `
-      INSERT INTO link (person_id, original_url, short_url, expires_in, password) 
-      VALUES ($1, $2, $3, NOW() + $4::interval, $5)`;
-    const values = [id, longUrl, shortUrl, expiresIn, hashedPassword];
+    let query;
+    let values;
+    if (expiresIn) {
+      query = `
+            INSERT INTO link (person_id, original_url, short_url, expires_in, password) 
+            VALUES ($1, $2, $3, NOW() + $4::interval, $5)`;
+      values = [id, longUrl, shortUrl, expiresIn, hashedPassword];
+    } else {
+      query = `
+            INSERT INTO link (person_id, original_url, short_url, password) 
+            VALUES ($1, $2, $3, $4)`;
+      values = [id, longUrl, shortUrl, hashedPassword];
+    }
 
     const response = await this.databaseService.query(query, values);
 
     if (!response) {
-      new ApiResponse<any>(
+      return new ApiResponse<any>(
         HttpStatus.INTERNAL_SERVER_ERROR,
-        'Something went wrong creating link',
+        'Something went wrong while creating the URL.',
       );
     }
 
