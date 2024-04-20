@@ -10,7 +10,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { CreateLinkDTO, CustomerDTO } from 'src/dto';
-import { CurrentUser } from 'src/common/decorators';
+import { CurrentUser, Public } from 'src/common/decorators';
 import { Response } from 'express';
 
 @ApiTags('App')
@@ -26,6 +26,7 @@ export class AppController {
     return this.appService.createLink(user.id, body);
   }
 
+  @Public()
   @Get('/:shortUrl')
   async getLongUrl(@Param('shortUrl') shortUrl: string, @Res() res: Response) {
     const result = await this.appService.getLongUrl(shortUrl);
@@ -48,6 +49,7 @@ export class AppController {
     }
   }
 
+  @Public()
   @Post('/protected')
   async getProtectedUrl(
     @Body() body: { shortUrl: string; password: string },
