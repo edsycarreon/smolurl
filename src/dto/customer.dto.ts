@@ -25,6 +25,10 @@ export class CustomerDTO extends BaseDTO {
 
   @IsOptional()
   @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
   @ApiProperty()
   addedAt?: string;
 

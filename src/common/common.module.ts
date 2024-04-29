@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from 'src/apps/auth/auth.module';
 import commonConfig from 'src/config/common.config';
 import { AuthGuard } from './guards/auth.guard';
+import { LinksModule } from 'src/apps/links/links/links.module';
 
 @Module({
   providers: [
@@ -18,7 +19,8 @@ import { AuthGuard } from './guards/auth.guard';
       isGlobal: true,
     }),
     AuthModule,
+    LinksModule,
   ],
-  exports: [AuthModule],
+  exports: [AuthModule, LinksModule],
 })
 export class CommonModule {}

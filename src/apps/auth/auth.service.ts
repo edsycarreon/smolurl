@@ -1,10 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiResponse } from 'src/common/api-response';
+import { castCustomerDto } from 'src/common/casts';
 import { castSignInDTO } from 'src/common/casts/auth.cast';
 import { AccountAlreadyExists, InvalidCredentials } from 'src/common/errors';
 import { DatabaseService } from 'src/database/database.service';
-import { RegisterAccountDTO, SignInAccountDTO } from 'src/dto';
+import { CustomerDTO, RegisterAccountDTO, SignInAccountDTO } from 'src/dto';
 import { castToArray, comparePasswords, hashPassword } from 'src/utils';
 
 @Injectable()
@@ -73,9 +74,7 @@ export class AuthService {
     const query = `SELECT * FROM person WHERE email = $1`;
 
     const response = await this.databaseService.query(query, values);
-    const user: SignInAccountDTO[] = castToArray(response.rows).map(
-      castSignInDTO,
-    );
+    const user: CustomerDTO[] = castToArray(response.rows).map(castCustomerDto);
 
     return user[0];
   }
