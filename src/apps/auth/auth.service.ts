@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiResponse } from 'src/common/api-response';
 import { castSignInDTO } from 'src/common/casts/auth.cast';
-import { ErrorCode, ErrorMessage } from 'src/common/constants';
+import { AccountAlreadyExists, InvalidCredentials } from 'src/common/errors';
 import { DatabaseService } from 'src/database/database.service';
 import { RegisterAccountDTO, SignInAccountDTO } from 'src/dto';
 import { castToArray, comparePasswords, hashPassword } from 'src/utils';
@@ -14,9 +14,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signUp(body: RegisterAccountDTO) {
+  public async signUp(body: RegisterAccountDTO) {
     Logger.log('Signing up');
     const { firstName, lastName, email, password } = body;
+
+    const user = await this.getUserByEmail(email);
+    if (user) {
+      throw new AccountAlreadyExists();
+    }
+
     const hashedPassword = await hashPassword(password);
     const query = `
       INSERT INTO person (first_name, last_name, email, password) 
@@ -26,9 +32,12 @@ export class AuthService {
     const response = await this.databaseService.query(query, values);
 
     if (!response) {
-      return new ApiResponse<any>(
+      throw new HttpException(
+        new ApiResponse<any>(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Error creating account',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
-        'Error creating account',
       );
     }
 
@@ -38,37 +47,36 @@ export class AuthService {
     );
   }
 
-  async signIn(body: SignInAccountDTO) {
+  public async signIn(body: SignInAccountDTO) {
     Logger.log('Signing in');
     const { email, password } = body;
+
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      throw new InvalidCredentials();
+    }
+
+    const hashedPassword = user.password;
+    const isPasswordMatched = await comparePasswords(password, hashedPassword);
+    if (!isPasswordMatched) {
+      throw new InvalidCredentials();
+    }
+    const token = await this.jwtService.signAsync({
+      user: user,
+    });
+
+    return new ApiResponse<string>(HttpStatus.OK, 'Login successful', token);
+  }
+
+  async getUserByEmail(email: string) {
     const values = [email];
     const query = `SELECT * FROM person WHERE email = $1`;
 
     const response = await this.databaseService.query(query, values);
-    const res: SignInAccountDTO[] = castToArray(response.rows).map(
+    const user: SignInAccountDTO[] = castToArray(response.rows).map(
       castSignInDTO,
     );
 
-    if (res.length == 0) {
-      return new ApiResponse<any>(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'Error logging in',
-      );
-    }
-
-    const hashedPassword = res[0].password;
-    const isPasswordMatched = await comparePasswords(password, hashedPassword);
-    if (!isPasswordMatched) {
-      return new ApiResponse<string>(
-        HttpStatus.UNAUTHORIZED,
-        ErrorCode.INCORRECT_PASSWORD,
-        ErrorMessage.INCORRECT_PASSWORD,
-      );
-    }
-    const token = await this.jwtService.signAsync({
-      user: res[0],
-    });
-
-    return new ApiResponse<string>(HttpStatus.OK, 'Login successful', token);
+    return user[0];
   }
 }
