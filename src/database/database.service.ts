@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { QueryResult, Pool } from 'pg';
+import commonConfig from 'src/config/common.config';
 import databaseConfig from 'src/config/database.config';
 
 @Injectable()
@@ -9,15 +10,18 @@ export class DatabaseService {
 
   constructor(
     @Inject(databaseConfig.KEY)
-    private readonly config: ConfigType<typeof databaseConfig>,
+    private readonly database: ConfigType<typeof databaseConfig>,
+    @Inject(commonConfig.KEY)
+    private readonly config: ConfigType<typeof commonConfig>,
   ) {
     this.pool = new Pool({
-      host: this.config.host,
-      port: this.config.port,
-      user: this.config.user,
-      password: this.config.password,
-      database: this.config.name,
-      options: `-c search_path=${this.config.schema}`,
+      host: this.database.host,
+      port: this.database.port,
+      user: this.database.user,
+      password: this.database.password,
+      database: this.database.name,
+      options: `-c search_path=${this.database.schema}`,
+      ssl: this.config.isProduction,
     });
   }
 
