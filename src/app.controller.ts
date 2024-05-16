@@ -31,9 +31,10 @@ export class AppController {
   async getLongUrl(@Param('shortUrl') shortUrl: string, @Res() res: Response) {
     const result = await this.appService.getLongUrl(shortUrl);
 
+    console.log('result', result);
     switch (result.status) {
       case HttpStatus.OK:
-        return res.redirect(result.url);
+        return res.redirect(result.data);
       case HttpStatus.NOT_FOUND:
         return res.status(HttpStatus.NOT_FOUND).send('URL not found');
       case HttpStatus.GONE:
@@ -62,7 +63,7 @@ export class AppController {
 
     switch (result.status) {
       case HttpStatus.OK:
-        return res.redirect(result.url);
+        return res.redirect(result.data);
       case HttpStatus.NOT_FOUND:
         return res.status(HttpStatus.NOT_FOUND).send('URL not found');
       case HttpStatus.GONE:

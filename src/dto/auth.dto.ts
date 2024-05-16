@@ -33,6 +33,16 @@ export class RegisterAccountDTO {
   lastName: string;
 }
 
+export class ChangePasswordDTO {
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  newPassword: string;
+}
+
 export class BaseAuthLoginDTO {
   @IsString()
   @ApiProperty()

@@ -76,21 +76,25 @@ export class AppService {
     const link = await this.getUrl(shortUrl);
 
     if (link.rows.length === 0) {
-      return { status: HttpStatus.NOT_FOUND, message: 'Link not found' };
+      return new ApiResponse<any>(HttpStatus.NOT_FOUND, 'Link not found');
     }
 
     if (link.rows[0].expires_in < new Date()) {
-      return { status: HttpStatus.GONE, message: 'Link has expired' };
+      return new ApiResponse<any>(HttpStatus.GONE, 'Link has expired');
     }
 
     if (link.rows[0].password != null) {
-      return {
-        status: HttpStatus.UNAUTHORIZED,
-        message: 'Link is password protected',
-      };
+      return new ApiResponse<any>(
+        HttpStatus.UNAUTHORIZED,
+        'Link is password protected',
+      );
     }
 
-    return { status: HttpStatus.OK, url: link.rows[0].original_url };
+    return new ApiResponse<any>(
+      HttpStatus.OK,
+      'Success',
+      link.rows[0].original_url,
+    );
   }
 
   public async getProtectedUrl(shortUrl: string, password: string) {
@@ -98,23 +102,27 @@ export class AppService {
     const link = await this.getUrl(shortUrl);
 
     if (link.rows.length === 0) {
-      return { status: HttpStatus.NOT_FOUND, message: 'Link not found' };
+      return new ApiResponse<any>(HttpStatus.NOT_FOUND, 'Link not found');
     }
 
     if (link.rows[0].expires_in < new Date()) {
-      return { status: HttpStatus.GONE, message: 'Link has expired' };
+      return new ApiResponse<any>(HttpStatus.GONE, 'Link has expired');
     }
 
     const hashedPassword = link.rows[0].password;
     const isPasswordMatched = await comparePasswords(password, hashedPassword);
     if (!isPasswordMatched) {
-      return {
-        status: HttpStatus.UNAUTHORIZED,
-        message: 'Incorrect password',
-      };
+      return new ApiResponse<any>(
+        HttpStatus.UNAUTHORIZED,
+        'Inccorect password',
+      );
     }
 
-    return { status: HttpStatus.OK, url: link.rows[0].original_url };
+    return new ApiResponse<any>(
+      HttpStatus.OK,
+      'Success',
+      link.rows[0].original_url,
+    );
   }
 
   private async generateUniqueShortUrl(maxLength: number): Promise<string> {

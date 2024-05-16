@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiResponse } from 'src/common/api-response';
 import { castCustomerDto } from 'src/common/casts';
-import { castSignInDTO } from 'src/common/casts/auth.cast';
 import { AccountAlreadyExists, InvalidCredentials } from 'src/common/errors';
 import { DatabaseService } from 'src/database/database.service';
 import { CustomerDTO, RegisterAccountDTO, SignInAccountDTO } from 'src/dto';
@@ -49,8 +48,8 @@ export class AuthService {
   }
 
   public async signIn(body: SignInAccountDTO) {
-    Logger.log('Signing in');
     const { email, password } = body;
+    Logger.log(`Signing in: ${email}`);
 
     const user = await this.getUserByEmail(email);
     if (!user) {
@@ -69,6 +68,51 @@ export class AuthService {
     return new ApiResponse<string>(HttpStatus.OK, 'Login successful', token);
   }
 
+  public async changePassword(
+    id: number,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    Logger.log('Changing password');
+    const userExists = await this.getUserById(id);
+    if (!userExists) {
+      throw new HttpException(
+        new ApiResponse<any>(HttpStatus.NOT_FOUND, 'User not found.'),
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const userPassword = await this.getUserPasswordById(id);
+    const isPasswordMatched = await comparePasswords(
+      currentPassword,
+      userPassword,
+    );
+
+    if (!isPasswordMatched) {
+      throw new InvalidCredentials();
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+    const query = `UPDATE person SET password = $1 WHERE person_id = $2`;
+    const values = [hashedPassword, id];
+    const response = await this.databaseService.query(query, values);
+
+    if (!response) {
+      throw new HttpException(
+        new ApiResponse<any>(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Error changing account password',
+        ),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return new ApiResponse<any>(
+      HttpStatus.OK,
+      'Password has been changed successfully.',
+    );
+  }
+
   async getUserByEmail(email: string) {
     const values = [email];
     const query = `SELECT * FROM person WHERE email = $1`;
@@ -77,5 +121,25 @@ export class AuthService {
     const user: CustomerDTO[] = castToArray(response.rows).map(castCustomerDto);
 
     return user[0];
+  }
+
+  async getUserById(id: number) {
+    const values = [id];
+    const query = `SELECT * FROM person WHERE person_id = $1`;
+
+    const response = await this.databaseService.query(query, values);
+    const user: CustomerDTO[] = castToArray(response.rows).map(castCustomerDto);
+
+    return user[0];
+  }
+
+  async getUserPasswordById(id: number) {
+    const values = [id];
+    const query = `SELECT password FROM person WHERE person_id = $1`;
+
+    const response = await this.databaseService.query(query, values);
+    const user: CustomerDTO[] = castToArray(response.rows).map(castCustomerDto);
+
+    return user[0].password;
   }
 }
