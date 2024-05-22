@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   HttpStatus,
   Param,
   Post,
@@ -12,6 +13,8 @@ import { AppService } from './app.service';
 import { CreateLinkDTO, CustomerDTO } from 'src/dto';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { Response } from 'express';
+import { ApiResponse } from './common/api-response';
+import { InvalidCredentials } from './common/errors';
 
 @ApiTags('App')
 @Controller()
@@ -35,14 +38,14 @@ export class AppController {
     switch (result.status) {
       case HttpStatus.OK:
         return res.redirect(result.data);
+      case HttpStatus.UNAUTHORIZED:
+        return res.redirect(
+          `http://localhost:3000/password-protected/${result.data}`,
+        );
       case HttpStatus.NOT_FOUND:
         return res.status(HttpStatus.NOT_FOUND).send('URL not found');
       case HttpStatus.GONE:
         return res.status(HttpStatus.GONE).send('URL has expired');
-      case HttpStatus.UNAUTHORIZED:
-        return res
-          .status(HttpStatus.UNAUTHORIZED)
-          .send('Password protected link message or URL');
       default:
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -52,10 +55,7 @@ export class AppController {
 
   @Public()
   @Post('/protected')
-  async getProtectedUrl(
-    @Body() body: { shortUrl: string; password: string },
-    @Res() res: Response,
-  ) {
+  async getProtectedUrl(@Body() body: { shortUrl: string; password: string }) {
     const result = await this.appService.getProtectedUrl(
       body.shortUrl,
       body.password,
@@ -63,17 +63,31 @@ export class AppController {
 
     switch (result.status) {
       case HttpStatus.OK:
-        return res.redirect(result.data);
+        return new ApiResponse<any>(
+          HttpStatus.OK,
+          'URL retrieved successfully',
+          result.data,
+        );
       case HttpStatus.NOT_FOUND:
-        return res.status(HttpStatus.NOT_FOUND).send('URL not found');
+        throw new HttpException(
+          new ApiResponse<any>(HttpStatus.NOT_FOUND, 'URL not found'),
+          HttpStatus.NOT_FOUND,
+        );
       case HttpStatus.GONE:
-        return res.status(HttpStatus.GONE).send('URL has expired');
+        throw new HttpException(
+          new ApiResponse<any>(HttpStatus.GONE, 'URL has expired'),
+          HttpStatus.GONE,
+        );
       case HttpStatus.UNAUTHORIZED:
-        return res.status(HttpStatus.UNAUTHORIZED).send('Incorrect password.');
+        throw new InvalidCredentials();
       default:
-        return res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .send('An unexpected error occurred');
+        throw new HttpException(
+          new ApiResponse<any>(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'Error creating account',
+          ),
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
     }
   }
 }
