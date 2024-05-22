@@ -79,7 +79,10 @@ export class AppService {
       return new ApiResponse<any>(HttpStatus.NOT_FOUND, 'Link not found');
     }
 
-    if (link.rows[0].expires_in < new Date()) {
+    if (
+      link.rows[0].expires_in != null &&
+      link.rows[0].expires_in < new Date()
+    ) {
       return new ApiResponse<any>(HttpStatus.GONE, 'Link has expired');
     }
 
@@ -87,6 +90,7 @@ export class AppService {
       return new ApiResponse<any>(
         HttpStatus.UNAUTHORIZED,
         'Link is password protected',
+        shortUrl,
       );
     }
 
@@ -105,7 +109,10 @@ export class AppService {
       return new ApiResponse<any>(HttpStatus.NOT_FOUND, 'Link not found');
     }
 
-    if (link.rows[0].expires_in < new Date()) {
+    if (
+      link.rows[0].expires_in != null &&
+      link.rows[0].expires_in < new Date()
+    ) {
       return new ApiResponse<any>(HttpStatus.GONE, 'Link has expired');
     }
 
