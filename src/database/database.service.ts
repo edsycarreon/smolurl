@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { QueryResult, Pool } from 'pg';
-import commonConfig from 'src/config/common.config';
-import databaseConfig from 'src/config/database.config';
+import commonConfig from '../config/common.config';
+import databaseConfig from '../config/database.config';
 
 @Injectable()
 export class DatabaseService {

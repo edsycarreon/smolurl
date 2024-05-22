@@ -7,15 +7,15 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CurrentUser, Public } from 'src/common/decorators';
+import { CurrentUser, Public } from '../../common/decorators';
 import { AuthService } from './auth.service';
 import {
   ChangePasswordDTO,
   CustomerDTO,
   RegisterAccountDTO,
   SignInAccountDTO,
-} from 'src/dto';
-import { ApiResponse } from 'src/common/api-response';
+} from '../../dto';
+import { ApiResponse } from '../../common/api-response';
 
 @ApiTags('auth')
 @Controller('auth')

@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { InvalidJWTToken } from 'src/common/errors';
-import { DecodedTokenDTO } from 'src/dto/auth.dto';
+import { DecodedTokenDTO } from '../dto';
+import { InvalidJWTToken } from '../common/errors';
 
 export class Jwt {
   constructor(

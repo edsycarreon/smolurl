@@ -1,4 +1,4 @@
-import { LinkDTO } from 'src/dto';
+import { LinkDTO } from '../../dto';
 
 export const castLinkDto = (data: any): LinkDTO => ({
   linkId: data.link_id,

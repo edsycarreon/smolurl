@@ -1,4 +1,4 @@
-import { CustomerDTO } from 'src/dto';
+import { CustomerDTO } from '../../dto';
 
 export const castCustomerDto = (data: any): CustomerDTO => ({
   id: data.person_id,

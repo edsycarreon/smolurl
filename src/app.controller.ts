@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
-import { CreateLinkDTO, CustomerDTO } from 'src/dto';
-import { CurrentUser, Public } from 'src/common/decorators';
+import { CreateLinkDTO, CustomerDTO } from './dto';
+import { CurrentUser, Public } from './common/decorators';
 import { Response } from 'express';
 import { ApiResponse } from './common/api-response';
 import { InvalidCredentials } from './common/errors';

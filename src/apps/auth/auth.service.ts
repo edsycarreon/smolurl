@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ApiResponse } from 'src/common/api-response';
-import { castCustomerDto } from 'src/common/casts';
-import { AccountAlreadyExists, InvalidCredentials } from 'src/common/errors';
-import { DatabaseService } from 'src/database/database.service';
-import { CustomerDTO, RegisterAccountDTO, SignInAccountDTO } from 'src/dto';
-import { castToArray, comparePasswords, hashPassword } from 'src/utils';
+import { ApiResponse } from '../../common/api-response';
+import { castCustomerDto } from '../../common/casts';
+import { AccountAlreadyExists, InvalidCredentials } from '../../common/errors';
+import { DatabaseService } from '../../database/database.service';
+import { CustomerDTO, RegisterAccountDTO, SignInAccountDTO } from '../../dto';
+import { castToArray, comparePasswords, hashPassword } from '../../utils';
 
 @Injectable()
 export class AuthService {

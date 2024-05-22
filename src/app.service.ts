@@ -1,14 +1,14 @@
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { ApiResponse } from 'src/common/api-response';
-import commonConfig from 'src/config/common.config';
-import { DatabaseService } from 'src/database/database.service';
-import { CreateLinkDTO } from 'src/dto';
+import { CreateLinkDTO } from './dto';
 import {
   comparePasswords,
   generateRandomCharacters,
   hashPassword,
-} from 'src/utils';
+} from './utils';
+import commonConfig from './config/common.config';
+import { DatabaseService } from './database/database.service';
+import { ApiResponse } from './common/api-response';
 
 @Injectable()
 export class AppService {

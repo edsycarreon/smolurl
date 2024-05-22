@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { ApiResponse } from 'src/common/api-response';
-import { castLinkDto } from 'src/common/casts';
-import { DatabaseService } from 'src/database/database.service';
-import { LinkDTO } from 'src/dto';
-import { castToArray } from 'src/utils';
+import { DatabaseService } from '../../database/database.service';
+import { LinkDTO } from '../../dto';
+import { castToArray } from '../../utils';
+import { castLinkDto } from '../../common/casts';
+import { ApiResponse } from '../../common/api-response';
 
 @Injectable()
 export class LinksService {

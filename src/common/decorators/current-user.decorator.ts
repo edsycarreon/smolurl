@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CustomerDTO } from 'src/dto/customer.dto';
+import { CustomerDTO } from '../../dto';
 
 export const CurrentUser = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {

@@ -1,8 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { LinksService } from './links.service';
-import { CurrentUser } from 'src/common/decorators';
-import { CustomerDTO } from 'src/dto';
+import { CustomerDTO } from '../../dto';
+import { CurrentUser } from '../../common/decorators';
 
 @ApiTags('links')
 @Controller('links')
