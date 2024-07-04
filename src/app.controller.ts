@@ -15,11 +15,15 @@ import { CurrentUser, Public } from './common/decorators';
 import { Response } from 'express';
 import { ApiResponse } from './common/api-response';
 import { InvalidCredentials } from './common/errors';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('App')
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('/')
   async createLink(
@@ -33,19 +37,16 @@ export class AppController {
   @Get('/:shortUrl')
   async getLongUrl(@Param('shortUrl') shortUrl: string, @Res() res: Response) {
     const result = await this.appService.getLongUrl(shortUrl);
-
-    console.log('result', result);
+    const frontendUrl = this.configService.get<string>('FRONTEND_BASE_URL');
     switch (result.status) {
       case HttpStatus.OK:
         return res.redirect(result.data);
       case HttpStatus.UNAUTHORIZED:
-        return res.redirect(
-          `http://localhost:3000/password-protected/${result.data}`,
-        );
+        return res.redirect(`${frontendUrl}/password-protected/${result.data}`);
       case HttpStatus.NOT_FOUND:
-        return res.status(HttpStatus.NOT_FOUND).send('URL not found');
+        return res.redirect(`${frontendUrl}/404`);
       case HttpStatus.GONE:
-        return res.status(HttpStatus.GONE).send('URL has expired');
+        return res.redirect(`${frontendUrl}/expired`);
       default:
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -84,7 +85,7 @@ export class AppController {
         throw new HttpException(
           new ApiResponse<any>(
             HttpStatus.INTERNAL_SERVER_ERROR,
-            'Error creating account',
+            'An error occurred while retrieving the URL.',
           ),
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
