@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { LinksService } from './links.service';
 import { CustomerDTO } from '../../dto';
@@ -16,5 +16,10 @@ export class LinksController {
     @Query('limit') limit = 10,
   ) {
     return this.linkService.getLinks(user.id, page, limit);
+  }
+
+  @Patch(':shortUrl')
+  public async updateLinkView(@Query('shortUrl') shortUrl: string) {
+    return this.linkService.updateLinkView(shortUrl);
   }
 }

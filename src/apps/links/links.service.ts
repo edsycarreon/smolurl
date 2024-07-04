@@ -21,4 +21,18 @@ export class LinksService {
 
     return new ApiResponse<LinkDTO[]>(HttpStatus.OK, 'Links retrieved', links);
   }
+
+  public async updateLinkView(shortUrl: string) {
+    Logger.log('Updating view count for: ' + shortUrl);
+    const query = `UPDATE link SET visit_count = visit_count + 1 WHERE short_url = $1`;
+    const values = [shortUrl];
+
+    const response = await this.databaseService.query(query, values);
+
+    if (!response) {
+      return new ApiResponse<any>(HttpStatus.NOT_FOUND, 'Link not found');
+    }
+
+    return new ApiResponse<any>(HttpStatus.OK, 'Link updated');
+  }
 }
