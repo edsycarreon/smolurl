@@ -9,6 +9,7 @@ import {
 import commonConfig from './config/common.config';
 import { DatabaseService } from './database/database.service';
 import { ApiResponse } from './common/api-response';
+import { LinksService } from './apps/links/links.service';
 
 @Injectable()
 export class AppService {
@@ -16,6 +17,7 @@ export class AppService {
     @Inject(commonConfig.KEY)
     private readonly config: ConfigType<typeof commonConfig>,
     private readonly databaseService: DatabaseService,
+    private readonly linksService: LinksService,
   ) {}
 
   public async createLink(id: number, body: CreateLinkDTO) {
@@ -94,6 +96,8 @@ export class AppService {
       );
     }
 
+    await this.linksService.updateLinkView(shortUrl);
+
     return new ApiResponse<any>(
       HttpStatus.OK,
       'Success',
@@ -124,6 +128,8 @@ export class AppService {
         'Inccorect password',
       );
     }
+
+    await this.linksService.updateLinkView(shortUrl);
 
     return new ApiResponse<any>(
       HttpStatus.OK,

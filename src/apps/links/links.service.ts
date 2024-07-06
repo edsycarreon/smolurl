@@ -11,9 +11,16 @@ export class LinksService {
 
   public async getLinks(id: number, page: number, limit: number) {
     Logger.log('Getting URLs for: ' + id);
+    if (!limit) {
+      limit = 10;
+    }
     const offset = (page - 1) * limit;
 
-    const query = `SELECT * FROM link WHERE person_id = $1 LIMIT $2 OFFSET $3`;
+    const query = `SELECT * FROM link 
+      WHERE person_id = $1 
+      ORDER BY added_at DESC 
+      LIMIT $2 
+      OFFSET $3`;
     const values = [id, limit, offset];
 
     const response = await this.databaseService.query(query, values);
@@ -24,7 +31,7 @@ export class LinksService {
 
   public async updateLinkView(shortUrl: string) {
     Logger.log('Updating view count for: ' + shortUrl);
-    const query = `UPDATE link SET visit_count = visit_count + 1 WHERE short_url = $1`;
+    const query = `UPDATE link SET visit_count = visit_count + 1, last_redirect = NOW(), updated_at = NOW() WHERE short_url = $1`;
     const values = [shortUrl];
 
     const response = await this.databaseService.query(query, values);

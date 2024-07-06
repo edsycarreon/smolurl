@@ -9,6 +9,7 @@ import { AuthModule } from './apps/auth/auth.module';
 import { CommonModule } from './common/common.module';
 import databaseConfig from './config/database.config';
 import commonConfig from './config/common.config';
+import { LinksModule } from './apps/links/links.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import commonConfig from './config/common.config';
     JwtModule,
     AuthModule,
     CommonModule,
+    LinksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
