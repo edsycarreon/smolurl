@@ -9,7 +9,7 @@ import { ApiResponse } from '../../common/api-response';
 export class LinksService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  public async getLinks(id: number, page: number, limit: number) {
+  public async getUserLinks(id: number, page: number, limit: number) {
     Logger.log('Getting URLs for: ' + id);
     if (!limit) {
       limit = 10;

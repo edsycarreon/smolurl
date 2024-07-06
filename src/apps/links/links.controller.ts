@@ -10,12 +10,12 @@ export class LinksController {
   constructor(private readonly linkService: LinksService) {}
 
   @Get('get')
-  public async getLinks(
+  public async getUserLinks(
     @CurrentUser() user: CustomerDTO,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    return this.linkService.getLinks(user.id, page, limit);
+    return this.linkService.getUserLinks(user.id, page, limit);
   }
 
   @Patch(':shortUrl')
