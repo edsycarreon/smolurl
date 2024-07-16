@@ -42,4 +42,18 @@ export class LinksService {
 
     return new ApiResponse<any>(HttpStatus.OK, 'Link updated');
   }
+
+  public async deleteLink(shortUrl: string) {
+    Logger.log('Deleting link: ' + shortUrl);
+    const query = `DELETE FROM link WHERE short_url = $1`;
+    const values = [shortUrl];
+
+    const response = await this.databaseService.query(query, values);
+
+    if (!response) {
+      return new ApiResponse<any>(HttpStatus.NOT_FOUND, 'Link not found');
+    }
+
+    return new ApiResponse<any>(HttpStatus.OK, 'Link deleted');
+  }
 }

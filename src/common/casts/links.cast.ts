@@ -7,4 +7,5 @@ export const castLinkDto = (data: any): LinkDTO => ({
   visitCount: data.visit_count,
   expiresIn: data.expires_in,
   lastRedirect: data.last_redirect,
+  createdAt: data.added_at,
 });

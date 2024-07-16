@@ -37,4 +37,8 @@ export class LinkDTO extends BaseDTO {
   @IsString()
   @IsOptional()
   lastRedirect: string;
+
+  @IsString()
+  @IsOptional()
+  createdAt: string;
 }
